@@ -1,0 +1,68 @@
+[package]
+authors = ["Arvid Norlander"]
+edition = "2024"
+license = "MPL-2.0"
+name = "perf-to-statemap"
+rust-version = "1.89.0"
+version = "0.1.0"
+
+[dependencies]
+byteorder = "1.5.0"
+clap = "4.5.45"
+clap_derive = "4.5.45"
+color-eyre = { version = "0.6.5", default-features = false, features = [
+    "track-caller",
+] }
+compact_str = { version = "0.9.0", features = ["serde"] }
+env_logger = "0.11.8"
+eyre = "0.6.12"
+linux-perf-data = "0.11.0"
+log = "0.4.27"
+serde = "1.0.219"
+serde_derive = "1.0.219"
+serde_json = "1.0.142"
+serde_repr = "0.1.20"
+
+[lints.rust]
+elided_lifetimes_in_paths = "warn"
+keyword_idents = "warn"
+macro_use_extern_crate = "warn"
+meta_variable_misuse = "warn"
+redundant_lifetimes = "warn"
+rust_2018_idioms = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unit_bindings = "warn"
+unused_qualifications = "warn"
+variant_size_differences = "warn"
+
+[lints.clippy]
+assigning_clones = "warn"
+cast_lossless = "warn"
+cloned_instead_of_copied = "warn"
+derive_partial_eq_without_eq = "warn"
+doc_markdown = "warn"
+equatable_if_let = "warn"
+explicit_iter_loop = "warn"
+flat_map_option = "warn"
+format_push_string = "warn"
+ignored_unit_patterns = "warn"
+manual_assert = "warn"
+manual_let_else = "warn"
+manual_string_new = "warn"
+needless_pass_by_value = "warn"
+or_fun_call = "warn"
+ptr_as_ptr = "warn"
+redundant_clone = "warn"
+redundant_closure_for_method_calls = "warn"
+redundant_else = "warn"
+semicolon_if_nothing_returned = "warn"
+type_repetition_in_bounds = "warn"
+undocumented_unsafe_blocks = "warn"
+uninlined_format_args = "warn"
+unnecessary_box_returns = "warn"
+unnecessary_safety_doc = "warn"
+unnested_or_patterns = "warn"
+unwrap_used = "warn"
+use_self = "warn"
+wildcard_imports = "warn"
