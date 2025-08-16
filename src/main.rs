@@ -1,6 +1,8 @@
 mod parsers;
 mod statemap;
+mod tracepoints;
 mod types;
+
 use crate::parsers::Action;
 use crate::parsers::ClockData;
 use crate::parsers::Event;

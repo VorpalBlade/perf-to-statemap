@@ -1,0 +1,101 @@
+---
+source: src/tracepoints/format.rs
+expression: format
+---
+Ok(
+    TracepointFormat {
+        name: "sched_switch",
+        id: 308,
+        print_fmt: "\"prev_comm=%s prev_pid=%d prev_prio=%d prev_state=%s%s ==> next_comm=%s next_pid=%d next_prio=%d\", REC->prev_comm, REC->prev_pid, REC->prev_prio, (REC->prev_state & ((((0x00000000 | 0x00000001 | 0x00000002 | 0x00000004 | 0x00000008 | 0x00000010 | 0x00000020 | 0x00000040) + 1) << 1) - 1)) ? __print_flags(REC->prev_state & ((((0x00000000 | 0x00000001 | 0x00000002 | 0x00000004 | 0x00000008 | 0x00000010 | 0x00000020 | 0x00000040) + 1) << 1) - 1), \"|\", { 0x00000001, \"S\" }, { 0x00000002, \"D\" }, { 0x00000004, \"T\" }, { 0x00000008, \"t\" }, { 0x00000010, \"X\" }, { 0x00000020, \"Z\" }, { 0x00000040, \"P\" }, { 0x00000080, \"I\" }) : \"R\", REC->prev_state & (((0x00000000 | 0x00000001 | 0x00000002 | 0x00000004 | 0x00000008 | 0x00000010 | 0x00000020 | 0x00000040) + 1) << 1) ? \"+\" : \"\", REC->next_comm, REC->next_pid, REC->next_prio",
+        fields: [
+            TracepointField {
+                field_type: "unsigned short",
+                field_name: "common_type",
+                offset: 0,
+                size: 2,
+                signed: false,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "unsigned char",
+                field_name: "common_flags",
+                offset: 2,
+                size: 1,
+                signed: false,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "unsigned char",
+                field_name: "common_preempt_count",
+                offset: 3,
+                size: 1,
+                signed: false,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "int",
+                field_name: "common_pid",
+                offset: 4,
+                size: 4,
+                signed: true,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "char[16]",
+                field_name: "prev_comm",
+                offset: 8,
+                size: 16,
+                signed: false,
+                array_type: Fixed,
+            },
+            TracepointField {
+                field_type: "pid_t",
+                field_name: "prev_pid",
+                offset: 24,
+                size: 4,
+                signed: true,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "int",
+                field_name: "prev_prio",
+                offset: 28,
+                size: 4,
+                signed: true,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "long",
+                field_name: "prev_state",
+                offset: 32,
+                size: 8,
+                signed: true,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "char[16]",
+                field_name: "next_comm",
+                offset: 40,
+                size: 16,
+                signed: false,
+                array_type: Fixed,
+            },
+            TracepointField {
+                field_type: "pid_t",
+                field_name: "next_pid",
+                offset: 56,
+                size: 4,
+                signed: true,
+                array_type: None,
+            },
+            TracepointField {
+                field_type: "int",
+                field_name: "next_prio",
+                offset: 60,
+                size: 4,
+                signed: true,
+                array_type: None,
+            },
+        ],
+    },
+)
