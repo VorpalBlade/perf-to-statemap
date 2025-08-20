@@ -1,6 +1,5 @@
 # Docs at
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
   - package-ecosystem: "cargo" # See documentation for possible values
