@@ -34,6 +34,8 @@ Example output:
 
 ## Limitations
 
-* Currently this works with kernel 6.16 x86-64, but not 6.12 on ARM64. Turns out
-  the tracepoint format is less stable. So this needs to be loaded from the system
-  rather than compiled in.
+* If you want to process data from a different system, you will need to copy
+  tracepoint definitions from `/sys/kernel/tracing` on that system. See
+  the `--sysroot` option for more details.
+* You need read access to the tracepoint format definitions in
+  `/sys/kernel/tracing`. This is not the default for non-root.
