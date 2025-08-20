@@ -460,6 +460,7 @@ dependencies = [
  "insta",
  "linux-perf-data",
  "log",
+ "memchr",
  "pastey",
  "regex",
  "serde",

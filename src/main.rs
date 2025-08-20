@@ -8,6 +8,7 @@ use crate::parsers::ClockData;
 use crate::parsers::Event;
 use crate::statemap::StatemapInputDatum;
 use crate::statemap::StatemapInputState;
+use crate::tracepoints::Tracepoint;
 use crate::types::CpuState;
 use byteorder::BigEndian;
 use byteorder::LittleEndian;
@@ -24,14 +25,17 @@ use linux_perf_data::linux_perf_event_reader::RecordType;
 use linux_perf_data::linux_perf_event_reader::SampleRecord;
 use std::collections::HashMap;
 use std::io::Write;
+use std::path::Path;
 
 mod cli {
     #[derive(clap_derive::Parser)]
     #[command(version, about)]
     /// Parse perf.data and generate statemeap
     pub struct Cli {
-        #[clap(short, long)]
-        pub verbose: bool,
+        /// A sysroot to load tracepoint defintions from (instead of
+        /// /sys/kernel/tracing on the current system)
+        #[clap(short, long, default_value = "/")]
+        pub sysroot: std::path::PathBuf,
         /// The name of the perf.data file to parse
         pub input: String,
         /// The name of the output file to write
@@ -78,7 +82,7 @@ fn main() -> eyre::Result<()> {
     write_header(&perf_file, &mut writer)?;
 
     // Create a lookup table from event attribute index to conversion action
-    let action_map = action_mapping(&perf_file)?;
+    let action_map = action_mapping(&perf_file, &cli.sysroot)?;
 
     let start_time = perf_file
         .sample_time_range()?
@@ -99,8 +103,8 @@ fn main() -> eyre::Result<()> {
                     // This we need to handle
                     RecordType::SAMPLE => {
                         ctr += 1;
-                        let action = action_map[attr_index];
-                        if action == Action::Ignore {
+                        let action = &action_map[attr_index];
+                        if matches!(action, Action::Ignore) {
                             continue; // Skip ignored actions
                         }
                         let common = record.common_data()?;
@@ -117,8 +121,6 @@ fn main() -> eyre::Result<()> {
                                 &record.parse_info,
                             )?,
                         };
-                        //let parsed = record.parse()?;
-                        let action = action_map[attr_index];
                         let event = Event::parse(
                             action,
                             sample.raw.ok_or_else(|| eyre!("No raw data for trace?"))?,
@@ -188,27 +190,45 @@ fn main() -> eyre::Result<()> {
 /// Create a mapping from event attribute index to action to take when seeing
 /// it. `perf sched` contains several events we don't use. Ignore those
 /// explicitly so we get a warning on any new events showing up.
-fn action_mapping(perf_file: &linux_perf_data::PerfFile) -> Result<Vec<Action>, eyre::Error> {
+fn action_mapping(
+    perf_file: &linux_perf_data::PerfFile,
+    sysroot: &Path,
+) -> Result<Vec<Action>, eyre::Error> {
     let mut event_map = Vec::with_capacity(perf_file.event_attributes().len());
     for entry in perf_file.event_attributes() {
         let name = entry
             .name()
             .ok_or_else(|| eyre!("Failed to get event name"))?;
-        //let ids = &entry.event_ids;
         let action = match name {
-            "irq:irq_handler_entry" => Action::EnterIrq,
-            "irq:irq_handler_exit" => Action::ExitIrq,
-            "irq:softirq_entry" => Action::EnterSoftirq,
-            "irq:softirq_exit" => Action::ExitSoftirq,
-            "irq:tasklet_entry" => Action::EnterTasklet,
-            "irq:tasklet_exit" => Action::ExitTasklet,
-            "sched:sched_migrate_task" => Action::Migrate,
+            "irq:irq_handler_entry" => Action::EnterIrq(
+                tracepoints::irq::IrqHandlerEntry::parser_from_sysroot(sysroot)?,
+            ),
+            "irq:irq_handler_exit" => Action::ExitIrq(
+                tracepoints::irq::IrqHandlerExit::parser_from_sysroot(sysroot)?,
+            ),
+            "irq:softirq_entry" => Action::EnterSoftirq(
+                tracepoints::irq::SoftirqEntry::parser_from_sysroot(sysroot)?,
+            ),
+            "irq:softirq_exit" => {
+                Action::ExitSoftirq(tracepoints::irq::SoftirqExit::parser_from_sysroot(sysroot)?)
+            }
+            "irq:tasklet_entry" => Action::EnterTasklet(
+                tracepoints::irq::TaskletEntry::parser_from_sysroot(sysroot)?,
+            ),
+            "irq:tasklet_exit" => {
+                Action::ExitTasklet(tracepoints::irq::TaskletExit::parser_from_sysroot(sysroot)?)
+            }
+            "sched:sched_migrate_task" => Action::Migrate(
+                tracepoints::sched::SchedMigrateTask::parser_from_sysroot(sysroot)?,
+            ),
             "sched:sched_process_fork" => Action::Ignore,
             "sched:sched_stat_iowait" => Action::Ignore,
             "sched:sched_stat_runtime" => Action::Ignore,
             "sched:sched_stat_sleep" => Action::Ignore,
             "sched:sched_stat_wait" => Action::Ignore,
-            "sched:sched_switch" => Action::Switch,
+            "sched:sched_switch" => Action::Switch(
+                tracepoints::sched::SchedSwitch::parser_from_sysroot(sysroot)?,
+            ),
             "sched:sched_wakeup_new" => Action::Ignore,
             "sched:sched_wakeup" => Action::Ignore,
             "sched:sched_waking" => Action::Ignore,
